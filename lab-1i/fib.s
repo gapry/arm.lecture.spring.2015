@@ -1,57 +1,40 @@
 	.syntax unified
 	.arch armv7-a
 	.text
-	.align 2
-	.thumb
-	.thumb_func
 	.global fibonacci
 	.type fibonacci, function
+@ ARM ISA
 fibonacci:
-	cmp r0, #1
-	ble .L0
-	mov r3, #1	@counter
-	mov r1, #0	@cache Fn-2
-	mov r2, #1	@cache Fn-1
-.LOOP:	
-	add r1, r1, r2
-	/* Overflow Detection */
-	/*----------------------------------*/	
-	mrs r4, CPSR
-	mov r4, r4, LSR #26
-	and r4, #00001
-	cmp r4, #1
-	beq .EXIT
-	/*----------------------------------*/	
-	add r3, #1
-	cmp r3, r0
-	beq .L1
-	/*----------------------------------*/	
+    .code 32
+    MOV r3, r0
+    MOV r2, lr
+    LDR r0, =.THUMB_MODE+1
+    MOV lr, pc
+    BLX r0
+    @ Continue
+    MOV r0, r1
+    MOV lr, r2
+    BX lr
 
-	add r2, r1, r2
-	/* Overflow Detection */
-	/*----------------------------------*/	
-	mrs r4, CPSR
-	mov r4, r4, LSR #26
-	and r4, #00001
-	cmp r4, #1
-	beq .EXIT
-	/*----------------------------------*/	
-	mrs r4, CPSR
-	add r3, #1
-	cmp r3, r0
-	beq .L2
-	/*----------------------------------*/	
-	b .LOOP
+@ THUMB ISA
+    .code 16
+.THUMB_MODE:
+    MOV r5, #0
+    MOV r1, #0  @fn-2
+    MOV r4, #1  @fn-1
+    MOV r6, #0  @fn
 .L0:
-	bx lr
-.L1:
-	mov r0, r1
-	bx lr
-.L2:
-	mov r0, r2
-	bx lr
-.EXIT:
-	mov r0, #-1
-	bx lr
+    CMP r5, r3
+    ITTTT LT
+    ADDLT r6, r1
+    ADDLT r6, r4
+    MOVLT r1, r4
+    MOVLT r4, r6
+    ITT LT
+    MOVLT r6, #0
+    ADDLT r5, #1
+    BLT .L0
+
+    BX lr
 	.size fibonacci, .-fibonacci
 	.end
