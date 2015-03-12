@@ -6,35 +6,26 @@
 @ ARM ISA
 fibonacci:
     .code 32
-    MOV r3, r0
-    MOV r2, lr
+    CMP r0, #1
+    BXLE lr
+    MOV r2, r0
     LDR r0, =.THUMB_MODE+1
-    MOV lr, pc
-    BLX r0
-    @ Continue
-    MOV r0, r1
-    MOV lr, r2
-    BX lr
-
+    BX r0
 @ THUMB ISA
     .code 16
 .THUMB_MODE:
-    MOV r5, #0
-    MOV r1, #0  @fn-2
-    MOV r4, #1  @fn-1
-    MOV r6, #0  @fn
-.L0:
-    CMP r5, r3
-    ITTTT LT
-    ADDLT r6, r1
-    ADDLT r6, r4
-    MOVLT r1, r4
-    MOVLT r4, r6
-    ITT LT
-    MOVLT r6, #0
-    ADDLT r5, #1
-    BLT .L0
-
+    MOV r0, #0  @fn-2
+    MOV r1, #1  @fn-1
+.LOOP:
+    ADDS r0, r1
+    ITT VS          @Overflow Detection
+    MOVVS r0, -1
+    BLXVS lr
+    EORS r0, r1
+    EORS r1, r0
+    EORS r0, r1
+    SUBS r2, #1
+    BGT .LOOP
     BX lr
 	.size fibonacci, .-fibonacci
 	.end
