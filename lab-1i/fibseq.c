@@ -31,16 +31,21 @@ int main(int argc, char **argv)
     int number=0;
     int result=0;
     struct timespec time_start, time_end;
-   
+    FILE* fp; 
+
     scanf("%d",&number);
-  
+
     reset (&time_start, &time_end);
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start); 
     result = fibonacci(number);  
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_end); 
+
     if(result != -1) {
-        printf("Time is %lu(s) : %lu(ns)\n", diff (time_start, time_end).tv_sec, diff (time_start, time_end).tv_nsec);
-        printf("The fibonacci sequence at %d is: %d\n", number, result);
+        fp=fopen("data.txt", "a");  
+        if (NULL != fp) {
+            fprintf(fp, "%d, %lu\n", result, diff (time_start, time_end).tv_nsec);
+        }
+        fclose(fp);
     } else {
         printf("It occurs overflow.\n");
     }

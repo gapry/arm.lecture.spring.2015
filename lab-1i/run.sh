@@ -1,5 +1,6 @@
 #!/bin/bash
 
+rm *.txt
 make clean && make 
 
 c=0
