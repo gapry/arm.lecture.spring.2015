@@ -27,6 +27,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdio.h>
 
 /** @addtogroup Template
   * @{
@@ -99,6 +100,25 @@ void USART1_puts(char* s)
     }
 }
 
+void st_printf(const char* fmt, ...)
+{
+	int* sp = __builtin_frame_address(0);
+	sp += 2;
+
+	char str[10000] = {'\0'};
+
+	char* it = str + sizeof(str) - 1;
+
+	int num = 17; 
+
+	do {
+		*--it = '0' + num % 10;
+	} while (num /= 10);
+
+	USART1_puts(it);
+	USART1_puts("\r\n");
+}
+
 /**************************************************************************************/
 int main(void)
 {
@@ -106,8 +126,11 @@ int main(void)
     GPIO_Configuration();
     USART1_Configuration();
 
+
 	USART1_puts("Testing!\r\n");
     USART1_puts("Hello World!\r\n");
+	st_printf("test", 17);
+
     USART1_puts("Just for STM32F429I Discovery verify USART1 with USB TTL Cable\r\n");
     while(1)
     {

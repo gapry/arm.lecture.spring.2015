@@ -51,7 +51,8 @@ CFLAGS += -I.
 OBJS = \
     main.o \
     stm32f4xx_it.o \
-    system_stm32f4xx.o
+    system_stm32f4xx.o \
+	fib.o
 
 # STARTUP FILE
 OBJS += startup_stm32f429_439xx.o
@@ -92,6 +93,9 @@ $(EXECUTABLE): $(OBJS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.S
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o: %.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
