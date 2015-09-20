@@ -9,32 +9,44 @@
 #define M_1	1024
 #define NTERMS 28
 
+/*
+ * Ref: http://www.sbin.org/doc/glibc/libc_19.html
+ */
+#define M_PI 3.14159265358979323846264338327
+
 static volatile double* __attribute__((aligned)) elapsed_time;
 
-typedef void ms_func(void);
+typedef void fs_func(void);
 
-ms_func* pi_profiler(void);
+fs_func* pi_calculate(void);
 
 typedef struct {
 	const char* fname;
-	ms_func* sign;
+	fs_func* sign;
 	const char* desc;
-} ms_list;
+} fs_list;
 
 void ms_baseline(void);
 void ms_bbp(void);
 void ms_bbp_avx(void);
 
+void v_baseline(void);
+void v_bbp(void);
+void v_bbp_avx(void);
+
 double baseline(size_t dt);
 float bbp(int n);
 float bbp_avx(int n);
 
-#define MSF(n, d) {.fname=#n, .sign=n, .desc=d}
+#define FSM(n, d) {.fname=#n, .sign=n, .desc=d}
 
-ms_list ml[] = {
-	MSF(ms_baseline, "To measure  the execution time of baseline()."),
-	MSF(ms_bbp, "To measure the execution time of bbp()."),
-	MSF(ms_bbp_avx, "To measure the execution time of bbp_avx()."),
+fs_list fl[] = {
+	FSM(ms_baseline, "To measure  the execution time of baseline()."),
+	FSM(ms_bbp, "To measure the execution time of bbp()."),
+	FSM(ms_bbp_avx, "To measure the execution time of bbp_avx()."),
+	FSM(v_baseline, "Verify the correctness."),
+	FSM(v_bbp, "Verify the correctness."),
+	FSM(v_bbp_avx, "Verify the correctness."),
 };
 
 __attribute__((constructor)) void time_init() {
@@ -50,10 +62,53 @@ void dbg_printf(const char* msg) {
 	printf("%s\n", msg);
 }
 
+void v_baseline(void) {
+	dbg_printf("Start to verify baseline.");
+	FILE* fopt = fopen("./correctness/baseline.txt", "w");
+	double pi = 0.0;
+
+	int i = 0;
+	for(; i < M_1; ++i) {
+		pi = baseline(i);
+		fprintf(fopt, "%d %lf\n", i, M_PI - pi);
+	}
+	
+	dbg_printf("Complete the verification of baseline.");
+}
+
+void v_bbp(void) {
+	dbg_printf("Start to verify bbp.");
+	FILE* fopt = fopen("./correctness/bbp.txt", "w");
+	float pi = 0.0;
+
+	int i = 0;
+	for(; i < NTERMS; ++i) {
+		pi = bbp(i);
+		fprintf(fopt, "%d %lf\n", i, M_PI - pi);
+	}
+	
+	dbg_printf("Complete the verification of bbp.");
+
+}
+
+void v_bbp_avx(void) {
+	dbg_printf("Start to verify bbp_avx.");
+	FILE* fopt = fopen("./correctness/bbp_avx.txt", "w");
+	float pi = 0.0;
+
+	int i = 0;
+	for(; i < NTERMS; ++i) {
+		pi = bbp_avx(i);
+		fprintf(fopt, "%d %lf\n", i, M_PI - pi);
+	}
+	
+	dbg_printf("Complete the verification of bbp_avx.");
+}
+
 void ms_baseline(void) {
 	dbg_printf("Start to measure baseline.");
 
-	FILE* fopt = fopen("./data/baseline.txt", "w");
+	FILE* fopt = fopen("./benchmark/baseline.txt", "w");
 	double pi = 0.0;
 	clock_t t0, t1;
 
@@ -72,7 +127,7 @@ void ms_baseline(void) {
 void ms_bbp(void) {
 	dbg_printf("Start to measure bbp.");
 
-	FILE* fopt = fopen("./data/bbp.txt", "w");
+	FILE* fopt = fopen("./benchmark/bbp.txt", "w");
 	double pi = 0.0;
 	clock_t t0, t1;
 
@@ -92,7 +147,7 @@ void ms_bbp(void) {
 void ms_bbp_avx(void) {
 	dbg_printf("Start to measure baseline.");
 
-	FILE* fopt = fopen("./data/bbp_avx.txt", "w");
+	FILE* fopt = fopen("./benchmark/bbp_avx.txt", "w");
 	double pi = 0.0;
 	clock_t t0, t1;
 
@@ -108,11 +163,11 @@ void ms_bbp_avx(void) {
 	dbg_printf("Complete the process of measure bbp_avx.");
 }
 
-ms_func* pi_profiler(void) {
+fs_func* pi_calculate(void) {
 	int i = 0;
 	
-	for(; i < sizeof(ml) / sizeof(ml[0]); ++i) {
-		ml[i].sign();
+	for(; i < sizeof(fl) / sizeof(fl[0]); ++i) {
+		fl[i].sign();
 	}
 
 	return NULL;
@@ -193,7 +248,7 @@ float bbp_avx(int n) {
 }
 
 int main(void) {
-	pi_profiler();	
+	pi_calculate();
 	
 	return 0;
 }
