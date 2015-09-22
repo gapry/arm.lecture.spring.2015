@@ -214,7 +214,7 @@ float bbp_avx(int n) {
 	
 	vec8 = _mm256_setzero_ps();
 
-	int i = 1; 
+	int i = 1, j = 0;
 	for(; i <= n; i += 2) {	
 		c0 *= i;
 		c1 *= (i + 1);
@@ -229,19 +229,14 @@ float bbp_avx(int n) {
 
 		p0 = 1.0 / pow(16, i);
 		p1 = 1.0 / pow(16, i + 1);
-		p = _mm256_set_ps(p1, p1, p1, p1, p0, p0, p0, p0);
+		p = _mm256_set_ps(-1 * p1, -1 * p1, -1 * p1, p1, -1 * p0, -1 * p0, -1 * p0, p0);
 		vec8 = _mm256_mul_ps(p, vec8);
 
 		__m256 result = vec8;
 
-		pi += ((float *) &result)[0];	
-		pi -= ((float *) &result)[1];
-		pi -= ((float *) &result)[2];
-		pi -= ((float *) &result)[3];
-		pi += ((float *) &result)[4];
-		pi -= ((float *) &result)[5];
-		pi -= ((float *) &result)[6];
-		pi -= ((float *) &result)[7];
+		for(j = 0; j < 8; ++j) {
+			pi += ((float *) &result)[j];	
+		}
 	}	
 
 	return pi;
@@ -249,7 +244,7 @@ float bbp_avx(int n) {
 
 int main(void) {
 	pi_calculate();
-	
+
 	return 0;
 }
 
