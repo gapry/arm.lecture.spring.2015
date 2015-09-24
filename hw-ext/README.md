@@ -1,6 +1,8 @@
-gcc -o test main.c -mavx -lm -w && ./main
+<code>gcc -o test main.c -mavx -lm -w && ./main</code>
 
-cd benchmark && gnuplot benchmark.dem
+<code>cd benchmark && gnuplot benchmark.dem</code>
 
-cd correctness && gnuplot correctness.dem
+<code>cd correctness && gnuplot correctness.dem</code>
+
+[My Note](https://gapry-doc.hackpad.com/Homework-Ext1-aAJoUHuUPvi)
 
