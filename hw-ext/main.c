@@ -4,7 +4,7 @@
 #include <time.h>
 #include <math.h>
 
-#define REXP 1000
+#define REXP 1000000
 #define M_128 134217728
 #define M_1	1024
 #define NTERMS 28
@@ -68,7 +68,7 @@ void v_baseline(void) {
 	double pi = 0.0;
 
 	int i = 0;
-	for(; i < M_1; ++i) {
+	for(; i < REXP; ++i) {
 		pi = baseline(i);
 		fprintf(fopt, "%d %lf\n", i, M_PI - pi);
 	}
@@ -82,7 +82,7 @@ void v_bbp(void) {
 	float pi = 0.0;
 
 	int i = 0;
-	for(; i < NTERMS; ++i) {
+	for(; i < REXP; ++i) {
 		pi = bbp(i);
 		fprintf(fopt, "%d %lf\n", i, M_PI - pi);
 	}
@@ -97,7 +97,7 @@ void v_bbp_avx(void) {
 	float pi = 0.0;
 
 	int i = 0;
-	for(; i < NTERMS; ++i) {
+	for(; i < REXP; ++i) {
 		pi = bbp_avx(i);
 		fprintf(fopt, "%d %lf\n", i, M_PI - pi);
 	}
@@ -115,7 +115,7 @@ void ms_baseline(void) {
 	int i = 0;
 	for (; i < REXP; ++i) {
 		t0 = clock();
-		pi = baseline(M_1);		
+		pi = baseline(i);		
 		t1 = clock();
 		elapsed_time[i] = (double)(t1 - t0) / CLOCKS_PER_SEC;
 		fprintf(fopt, "%d %lf\n", i, elapsed_time[i]);
@@ -134,7 +134,7 @@ void ms_bbp(void) {
 	int i = 0;
 	for (; i < REXP; ++i) {
 		t0 = clock();
-		pi = bbp(NTERMS);
+		pi = bbp(i);
 		t1 = clock();
 		elapsed_time[i] = (double)(t1 - t0) / CLOCKS_PER_SEC;
 		fprintf(fopt, "%d %lf\n", i, elapsed_time[i]);
@@ -154,7 +154,7 @@ void ms_bbp_avx(void) {
 	int i = 0;
 	for (; i < REXP; ++i) {
 		t0 = clock();
-		pi = bbp_avx(NTERMS);		
+		pi = bbp_avx(i);		
 		t1 = clock();
 		elapsed_time[i] = (double)(t1 - t0) / CLOCKS_PER_SEC;
 		fprintf(fopt, "%d %lf\n", i, elapsed_time[i]);
@@ -232,7 +232,7 @@ float bbp_avx(int n) {
 		p = _mm256_set_ps(-1 * p1, -1 * p1, -1 * p1, p1, -1 * p0, -1 * p0, -1 * p0, p0);
 		vec8 = _mm256_mul_ps(p, vec8);
 
-		__m256 result = vec8;
+		__attribute__((aligned(32))) __m256 result = vec8;
 
 		for(j = 0; j < 8; ++j) {
 			pi += ((float *) &result)[j];	
